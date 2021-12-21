@@ -1,0 +1,84 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+typedef long long LL;
+const int N = 1010, INF = 0x3f3f3f3f;
+
+int n, m, start;
+int g[N][N];
+struct Deliver{
+	int ddl;
+	int Y, P;
+}delivers[N];
+
+int main()
+{
+	int hh, mm;
+	
+	scanf("%d %d %d:%d", &n, &m, &hh, &mm);
+	start = hh * 60 + mm;
+	for (int i = 1; i <= n; i ++ ) 
+	{
+		int Y, P;
+		scanf("%d:%d %d %d", &hh, &mm, &Y, &P);
+		delivers[i] = {hh * 60 + mm, Y, P};
+	}
+	memset(g, INF, sizeof g);
+	for (int i = 0; i <= n; i ++ ) g[i][i] = 0;
+	while (m -- )
+	{
+		int a, b, t;
+		scanf("%d%d%d", &a, &b, &t);
+		g[a][b] = g[b][a] = min(g[a][b], t);
+	}
+	
+	for (int k = 0; k <= n; k ++ ) 
+		for (int i = 0; i <= n; i ++ )
+			for (int j = 0; j <= n; j ++ )	
+				g[i][j] = min(g[i][j], g[i][k] + g[k][j]);
+	
+	int d1 = -INF, d2 = INF;
+	int k;
+	cin >> k;
+	while (k -- )
+	{
+		int cur = 0, curt = start;
+		int sum = 0;
+		bool flag = true;
+		unordered_map<int, int> cnt;
+		for (int i = 0; i < n; i ++ ) 
+		{
+			int x;
+			cin >> x;
+			cnt[x] ++;
+			if (x < 1 || x > n) 
+			{
+				flag = false;
+				continue;
+			} 
+			sum += delivers[x].Y;
+			curt += g[cur][x];
+			if (curt > delivers[x].ddl) sum -= delivers[x].P;
+			cur = x;
+		}
+		curt += g[cur][0];
+		for (int i = 1; i <= n; i ++ ) 
+			if (!cnt[i])
+			{
+				flag = false;
+				break;
+			}
+		if (!flag) continue;
+		if (sum > d1)
+		{
+			d1 = sum;
+			d2 = curt;
+		} else if (sum == d1 && curt < d2) d2 = curt;
+	}
+	hh = d2 / 60, mm = d2 % 60;
+	if (hh >= 24) hh %= 24;
+	printf("%d %02d:%02d\n", d1, hh, mm);
+
+	return 0;
+}
